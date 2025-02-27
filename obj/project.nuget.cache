@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "WnHZKBHtj7cnljhY8mtezUbg+ClKg9s842YVRFppo034N6k6wuZhSp8twssAHCg0+L+C4C9PpwbiIj0KAv0V1g==",
+  "dgSpecHash": "YI1JfkWm+iRd8EM9OBLn6S9iVzCeZSuR03qwmq8a7J4/vuWoxLQCrUSkwi+3RGMI9aQBNYgwAFSJ3cHeaestgw==",
   "success": true,
-  "projectFilePath": "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/CajValp.csproj",
+  "projectFilePath": "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/CajValp.csproj",
   "expectedPackageFiles": [
     "/Users/christianinostroza/.nuget/packages/azure.core/1.24.0/azure.core.1.24.0.nupkg.sha512",
     "/Users/christianinostroza/.nuget/packages/azure.identity/1.6.0/azure.identity.1.6.0.nupkg.sha512",
@@ -101,9 +101,9 @@
     "/Users/christianinostroza/.nuget/packages/system.threading.tasks/4.3.0/system.threading.tasks.4.3.0.nupkg.sha512",
     "/Users/christianinostroza/.nuget/packages/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "/Users/christianinostroza/.nuget/packages/system.windows.extensions/5.0.0/system.windows.extensions.5.0.0.nupkg.sha512",
+    "/Users/christianinostroza/.nuget/packages/microsoft.netcore.app.ref/6.0.31/microsoft.netcore.app.ref.6.0.31.nupkg.sha512",
     "/Users/christianinostroza/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.31/microsoft.aspnetcore.app.ref.6.0.31.nupkg.sha512",
-    "/Users/christianinostroza/.nuget/packages/microsoft.netcore.app.host.osx-x64/6.0.31/microsoft.netcore.app.host.osx-x64.6.0.31.nupkg.sha512",
-    "/Users/christianinostroza/.nuget/packages/microsoft.netcore.app.ref/6.0.31/microsoft.netcore.app.ref.6.0.31.nupkg.sha512"
+    "/Users/christianinostroza/.nuget/packages/microsoft.netcore.app.host.osx-x64/6.0.31/microsoft.netcore.app.host.osx-x64.6.0.31.nupkg.sha512"
   ],
   "logs": []
 }

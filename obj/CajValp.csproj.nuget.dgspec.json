@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/CajValp.csproj": {}
+    "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/CajValp.csproj": {}
   },
   "projects": {
-    "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/CajValp.csproj": {
+    "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/CajValp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/CajValp.csproj",
+        "projectUniqueName": "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/CajValp.csproj",
         "projectName": "CajValp",
-        "projectPath": "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/CajValp.csproj",
+        "projectPath": "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/CajValp.csproj",
         "packagesPath": "/Users/christianinostroza/.nuget/packages/",
-        "outputPath": "/Users/christianinostroza/Desktop/ProyectosCodeNET/CajValp/obj/",
+        "outputPath": "/Users/christianinostroza/Desktop/Proyectos_CodeNET/CajValp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/christianinostroza/.nuget/NuGet/NuGet.Config"

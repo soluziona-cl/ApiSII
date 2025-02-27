@@ -9,6 +9,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using CajValp.Models;
 using OfficeOpenXml; // Asegúrate de instalar el paquete EPPlus
+using System.Threading;
 
 namespace CajValp.Services
 {
@@ -256,7 +257,7 @@ namespace CajValp.Services
             }
         }
 
-        public async Task ExportDataToXlsxAsync2(string parameterValue, string fileName)
+        public async Task ExportDataToXlsxAsync2(string parameterValue, string fileName, CancellationToken cancellationToken = default)
         {
             var records = new List<ExportDataModel2>();
 
@@ -267,11 +268,11 @@ namespace CajValp.Services
                 command.CommandText = "EXEC [172.16.119.28].[CustomerSoluziona].[dbo].[sp_RS_ReporteIVR_Encuesta_2_Cajval] @ParameterValue";
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddWithValue("@ParameterValue", parameterValue);
-                command.CommandTimeout = 120;
+                command.CommandTimeout = 900;
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(cancellationToken);
 
-                using var reader = await command.ExecuteReaderAsync();
+                using var reader = await command.ExecuteReaderAsync(cancellationToken);
                 while (await reader.ReadAsync())
                 {
                     var record = new ExportDataModel2
