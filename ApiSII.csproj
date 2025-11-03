@@ -16,4 +16,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
   </ItemGroup>
 
+  <!-- 
+    NOTA: Los archivos en wwwroot/ se incluyen automáticamente en el build y publish.
+    No es necesario agregarlos manualmente al .csproj.
+    Swagger y la documentación Slate (/docs) estarán disponibles en producción.
+  -->
+
 </Project>

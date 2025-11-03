@@ -1,0 +1,24 @@
+/* Additional styles for Slate documentation */
+
+.dark-code pre code {
+  color: #f8f8f2;
+}
+
+.content .highlight {
+  background-color: #272822;
+  border-radius: 3px;
+  padding: 10px;
+  margin: 15px 0;
+  overflow-x: auto;
+}
+
+.content .highlight pre {
+  margin: 0;
+  background-color: transparent;
+}
+
+.content .highlight code {
+  background-color: transparent;
+  padding: 0;
+}
+

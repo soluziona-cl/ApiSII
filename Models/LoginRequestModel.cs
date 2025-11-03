@@ -12,7 +12,7 @@ namespace ApiSII.Models
         /// </summary>
         /// <example>usuario@example.com</example>
         [Required(ErrorMessage = "El campo Username es requerido.")]
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "El campo Username debe tener entre 3 y 100 caracteres.")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Error de credenciales.")]
         public string Username { get; set; } = string.Empty;
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace ApiSII.Models
         /// </summary>
         /// <example>Password123!</example>
         [Required(ErrorMessage = "El campo Password es requerido.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "El campo Password debe tener entre 6 y 100 caracteres.")]
+        [StringLength(100, MinimumLength = 5, ErrorMessage = "Error de credenciales.")]
         public string Password { get; set; } = string.Empty;
     }
 }
