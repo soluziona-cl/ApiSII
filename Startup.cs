@@ -1,14 +1,16 @@
-using CajValp.Interfaces;
-using CajValp.Repositories;
-using CajValp.Services;
+using ApiSII.Interfaces;
+using ApiSII.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.IO;
+using System.Text;
 
-namespace CajValp
+namespace ApiSII
 {
     public class Startup
     {
@@ -19,107 +21,115 @@ namespace CajValp
 
         public IConfiguration Configuration { get; }
 
-        // Este método se usa para agregar servicios al contenedor.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-           
 
-            // Registrar dependencias
-            services.AddScoped<IFtpService, FtpService>();
-            services.AddScoped<IFileProcessingService, FileProcessingService>();
-            services.AddScoped<IFileProcessingService2, FileProcessingService2>();
-            services.AddScoped<IFileRepository, FileRepository>();
+            // Configurar JWT Authentication
+            var jwtSettings = Configuration.GetSection("JwtSettings");
+            var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey no está configurada.");
 
-            string connectionString = Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("DefaultConnection string is not configured properly.");
-            if (string.IsNullOrEmpty(connectionString))
+            services.AddAuthentication(options =>
             {
-                throw new Exception("DefaultConnection string is not configured properly.");
-            }
-            services.AddSingleton(connectionString);
-
-            // Registrar la cadena de conexión para el repositorio
-            services.AddScoped<FtpControlRepository>(provider =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
             {
-                var connectionString = Configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrEmpty(connectionString))
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    throw new Exception("DefaultConnection string is not configured properly.");
-                }
-                return new FtpControlRepository(connectionString);
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                };
             });
 
-            services.AddScoped<ExportService>(provider =>
-              {
-                  var connectionString = Configuration.GetConnectionString("DefaultConnection");
-                  if (string.IsNullOrEmpty(connectionString))
-                  {
-                      throw new Exception("DefaultConnection string is not configured properly.");
-                  }
-                  return new ExportService(connectionString);
-              });
+            // Configurar HttpClientFactory
+            services.AddHttpClient();
 
-            services.AddSwaggerGen();
-            // Registrar la cadena de conexión como Singleton
+            // Registrar servicios de WhatsApp
+            services.AddScoped<IWhatsAppService, WhatsAppService>();
 
-            services.AddScoped<FileProcessingService>();
-            services.AddScoped<FileProcessingService2>();
+            // Configurar Swagger con soporte JWT
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "ApiSII - WhatsApp Business API",
+                    Version = "v1",
+                    Description = "API para el envío de mensajes de WhatsApp Business mediante templates. " +
+                                 "Requiere autenticación JWT para acceder a los endpoints.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Soporte ApiSII",
+                        Email = "soporte@apisii.com"
+                    }
+                });
 
-            services.AddScoped<FtpService>(); // Añadir esta línea para registrar FtpService
+                // Incluir comentarios XML para documentación
+                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
 
+                // Configurar JWT en Swagger
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header usando el esquema Bearer. Ingrese su token en el formato: Bearer {token}",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
         }
 
-        // Este método se usa para configurar el pipeline de solicitudes HTTP.
         public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
-            if (env.IsDevelopment() || env.IsProduction())
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("v1/swagger.json", "FtpCsvApi v1");
-                });
             }
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiSII v1");
+                c.RoutePrefix = string.Empty; // Swagger UI en la raíz
+            });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
-            // Crear la carpeta Download si no existe
-            CreateDownloadFolder();
-            CreateUploadFolder();
-            CreateExcelFolder();
-        }
-
-        // Método para crear la carpeta Download si no existe
-        private static void CreateDownloadFolder()
-        {
-            string downloadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "Download");
-            if (!Directory.Exists(downloadFolderPath))
-            {
-                Directory.CreateDirectory(downloadFolderPath);
-            }
-        }
-        private static void CreateUploadFolder()
-        {
-            string uploadFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "Upload");
-            if (!Directory.Exists(uploadFolderPath))
-            {
-                Directory.CreateDirectory(uploadFolderPath);
-            }
-        }
-        private static void CreateExcelFolder()
-        {
-            string excelFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "Carga", "Excel");
-            if (!Directory.Exists(excelFolderPath))
-            {
-                Directory.CreateDirectory(excelFolderPath);
-            }
         }
     }
 }
