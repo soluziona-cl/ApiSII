@@ -1,3 +1,4 @@
+using ApiSII.Filters;
 using ApiSII.Interfaces;
 using ApiSII.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -51,7 +52,9 @@ namespace ApiSII
             // Configurar HttpClientFactory
             services.AddHttpClient();
 
-            // Registrar servicios de WhatsApp
+            // Registrar servicios
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IWhatsAppService, WhatsAppService>();
 
             // Configurar Swagger con soporte JWT
@@ -77,6 +80,11 @@ namespace ApiSII
                 {
                     c.IncludeXmlComments(xmlPath);
                 }
+
+                // Configurar ejemplos y esquemas personalizados
+                c.EnableAnnotations();
+                c.SchemaFilter<ExampleSchemaFilter>();
+                c.OperationFilter<ExampleOperationFilter>();
 
                 // Configurar JWT en Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -124,6 +132,14 @@ namespace ApiSII
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "ApiSII v1");
                 c.RoutePrefix = string.Empty; // Swagger UI en la raíz
+                c.DisplayRequestDuration();
+                c.EnableDeepLinking();
+                c.EnableFilter();
+                c.ShowExtensions();
+                c.EnableValidator();
+                c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+                c.DefaultModelsExpandDepth(2);
+                c.DefaultModelRendering(Swashbuckle.AspNetCore.SwaggerUI.ModelRendering.Example);
             });
 
             app.UseEndpoints(endpoints =>
