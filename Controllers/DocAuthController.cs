@@ -26,17 +26,29 @@ namespace ApiSII.Controllers
         /// Muestra la página de login para acceder a la documentación
         /// </summary>
         [HttpGet("docs-login")]
-        public IActionResult Login([FromQuery] string? returnUrl, [FromQuery] bool denied = false, [FromQuery] bool loggedout = false)
+        public IActionResult Login([FromQuery] string? returnUrl, [FromQuery] bool denied = false, [FromQuery] bool loggedout = false, [FromQuery] bool error = false, [FromQuery] string? errorType = null)
         {
             _logger.LogInformation("DocAuthController.Login GET - Path: {Path}, PathBase: {PathBase}", 
                 HttpContext.Request.Path, HttpContext.Request.PathBase);
             
+            string? errorMessage = null;
+            if (denied)
+            {
+                errorMessage = "Acceso denegado. Por favor, inicia sesión.";
+            }
+            else if (error)
+            {
+                errorMessage = errorType == "required" 
+                    ? "Usuario y contraseña son requeridos." 
+                    : "Credenciales inválidas. Por favor, intente nuevamente.";
+            }
+            
             var viewModel = new
             {
                 ReturnUrl = returnUrl ?? "/swagger",
-                ErrorMessage = denied ? "Acceso denegado. Por favor, inicia sesión." : null,
+                ErrorMessage = errorMessage,
                 SuccessMessage = loggedout ? "Sesión cerrada exitosamente." : null,
-                HasError = denied,
+                HasError = denied || error,
                 HasSuccess = loggedout
             };
 
@@ -51,10 +63,19 @@ namespace ApiSII.Controllers
         [HttpPost("docs-login")]
         public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password, [FromForm] string? returnUrl)
         {
+            // Obtener PathBase una sola vez al inicio del método
+            var pathBase = HttpContext.Request.PathBase.Value ?? "";
+            
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                var errorHtml = GetLoginPage(new { ReturnUrl = returnUrl ?? "/swagger", ErrorMessage = "Usuario y contraseña son requeridos.", HasError = true });
-                return Content(errorHtml, "text/html");
+                // Redirigir al login con parámetro de error para evitar problemas de reenvío de formulario
+                var loginUrl = $"{pathBase.TrimEnd('/')}/docs-login?error=true&errorType=required";
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    loginUrl += $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
+                }
+                
+                return Redirect(loginUrl);
             }
 
             // Validar credenciales usando el mismo servicio que la API
@@ -63,8 +84,15 @@ namespace ApiSII.Controllers
             if (!isValid)
             {
                 _logger.LogWarning("Intento de login fallido para documentación: {Username}", username);
-                var errorHtml = GetLoginPage(new { ReturnUrl = returnUrl ?? "/swagger", ErrorMessage = "Credenciales inválidas. Por favor, intente nuevamente.", HasError = true });
-                return Content(errorHtml, "text/html");
+                
+                // Redirigir al login con parámetro de error para evitar problemas de reenvío de formulario
+                var loginUrl = $"{pathBase.TrimEnd('/')}/docs-login?error=true";
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    loginUrl += $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
+                }
+                
+                return Redirect(loginUrl);
             }
 
             // Crear claims para la autenticación
@@ -90,7 +118,6 @@ namespace ApiSII.Controllers
 
             // Redirigir a la URL solicitada o a Swagger por defecto
             // Considerar el PathBase si existe (para prefijos como /API/SII)
-            var pathBase = HttpContext.Request.PathBase.Value ?? "";
             var redirectUrl = returnUrl ?? $"{pathBase.TrimEnd('/')}/swagger";
             
             // Asegurar que la URL de retorno incluya el PathBase si no lo tiene

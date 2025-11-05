@@ -164,6 +164,10 @@ namespace ApiSII
             
             // Middleware para proteger Swagger y Docs con autenticación basada en cookies
             app.UseMiddleware<DocsAuthMiddleware>();
+            
+            // Middleware para ajustar rutas de Swagger UI cuando hay PathBase
+            // Debe estar ANTES de UseSwaggerUI para poder interceptar la respuesta HTML
+            app.UseMiddleware<SwaggerPathBaseMiddleware>();
 
             // Configurar Swagger - Disponible en todos los entornos (Development y Production)
             // NOTA: Swagger está habilitado explícitamente para producción
